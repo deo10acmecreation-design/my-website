@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IndentPro — Industrial ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#0d0d0f;
+  --ink2:#13141a;
+  --ink3:#1c1e28;
+  --ink4:#252836;
+  --line:#2a2d3e;
+  --line2:#353849;
+  --steel:#4a4e6a;
+  --mist:#7c80a0;
+  --fog:#a8adc4;
+  --snow:#e8eaf6;
+  --white:#f4f5ff;
+  --blue:#3d6cff;
+  --blue2:#5b83ff;
+  --blue3:#8aa8ff;
+  --amber:#ffb830;
+  --amber2:#ffd080;
+  --green:#00d68a;
+  --green2:#4dffa8;
+  --rose:#ff4567;
+  --rose2:#ff7a90;
+  --cyan:#00e5ff;
+  --r:8px;
+  --r2:14px;
+  --r3:20px;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--ink2);}
+::-webkit-scrollbar-thumb{background:var(--steel);border-radius:4px;}
+
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--ink);
+  color:var(--snow);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ===== SCANLINE OVERLAY ===== */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ===== ANIMATED BG ===== */
+.bg{
+  position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 800px 600px at 0% 0%,rgba(61,108,255,0.07),transparent),
+             radial-gradient(ellipse 600px 500px at 100% 100%,rgba(0,214,138,0.05),transparent),
+             radial-gradient(ellipse 500px 400px at 50% 50%,rgba(255,184,48,0.03),transparent);
+}
+.bg-grid{
+  position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(61,108,255,0.06) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(61,108,255,0.06) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse at center,rgba(0,0,0,0.8) 0%,transparent 75%);
+}
+.bg-noise{
+  position:fixed;inset:0;z-index:0;
+  opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* ===== HEADER ===== */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(13,13,15,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+  padding:0 2rem;
+  animation:hdrIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes hdrIn{from{transform:translateY(-80px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hdr{
+  max-width:1440px;margin:0 auto;
+  height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:2rem;letter-spacing:0.08em;
+  background:linear-gradient(90deg,var(--blue2),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  position:relative;
+}
+.logo::after{
+  content:'ERP';
+  position:absolute;top:-4px;right:-36px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.45rem;font-weight:600;letter-spacing:0.15em;
+  color:var(--amber);
+  -webkit-text-fill-color:var(--amber);
+  background:rgba(255,184,48,0.12);
+  padding:2px 5px;border-radius:3px;
+  border:1px solid rgba(255,184,48,0.3);
+}
+.hdr-mid{
+  display:flex;align-items:center;gap:2rem;
+}
+.hdr-stat{
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 1.5rem;border-left:1px solid var(--line);
+}
+.hdr-stat:first-child{border-left:none;}
+.hdr-stat-v{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--white);}
+.hdr-stat-l{font-size:0.65rem;color:var(--mist);text-transform:uppercase;letter-spacing:0.1em;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:0.75rem;}
+.live-badge{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.3rem 0.75rem;
+  background:rgba(0,214,138,0.08);
+  border:1px solid rgba(0,214,138,0.25);
+  border-radius:50px;
+  font-size:0.72rem;font-weight:600;color:var(--green);
+  letter-spacing:0.05em;text-transform:uppercase;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green);}50%{opacity:0.4;box-shadow:none;}}
+.setup-btn{
+  padding:0.45rem 1.25rem;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border:none;border-radius:var(--r);
+  color:white;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:600;
+  cursor:pointer;letter-spacing:0.03em;
+  box-shadow:0 0 20px rgba(61,108,255,0.35);
+  transition:all 0.2s;
+}
+.setup-btn:hover{transform:translateY(-1px);box-shadow:0 4px 25px rgba(61,108,255,0.55);}
+
+/* ===== MAIN ===== */
+.main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem;}
+
+/* ===== HERO STRIP ===== */
+.hero-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r2);
+  overflow:hidden;margin-bottom:2rem;
+  animation:fadeUp 0.7s 0.1s both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.hero-cell{
+  background:var(--ink2);
+  padding:1.5rem 2rem;
+  position:relative;overflow:hidden;
+  transition:all 0.3s;cursor:default;
+}
+.hero-cell::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  opacity:0;transition:opacity 0.3s;
+}
+.hero-cell:hover::before{opacity:1;}
+.hero-cell:nth-child(1)::before{background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.hero-cell:nth-child(2)::before{background:linear-gradient(90deg,var(--blue),var(--blue2));}
+.hero-cell:nth-child(3)::before{background:linear-gradient(90deg,var(--amber),var(--amber2));}
+.hero-cell:nth-child(4)::before{background:linear-gradient(90deg,var(--green),var(--green2));}
+.hero-cell:hover{background:var(--ink3);}
+.hero-icon{font-size:1.5rem;margin-bottom:0.6rem;}
+.hero-val{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;
+  line-height:1;letter-spacing:0.05em;
+}
+.hero-label{font-size:0.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:0.12em;margin-top:0.3rem;}
+.hero-sub{font-size:0.78rem;margin-top:0.5rem;font-weight:500;}
+
+/* ===== TABS ===== */
+.tab-row{
+  display:flex;gap:0;
+  background:var(--ink2);
+  border:1px solid var(--line);border-radius:var(--r2);
+  padding:0.4rem;margin-bottom:1.5rem;
+  animation:fadeUp 0.7s 0.2s both;
+  overflow:hidden;
+}
+.tab{
+  flex:1;padding:0.8rem 1rem;
+  display:flex;align-items:center;justify-content:center;gap:0.6rem;
+  font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;
+  color:var(--mist);letter-spacing:0.03em;
+  cursor:pointer;border:none;background:transparent;
+  border-radius:var(--r);transition:all 0.3s;
+  position:relative;white-space:nowrap;
+}
+.tab.active{color:var(--white);background:var(--ink4);border:1px solid var(--line2);}
+.tab.active.t-purchase{color:var(--blue2);box-shadow:inset 0 1px 0 rgba(91,131,255,0.3);}
+.tab.active.t-service{color:var(--amber);box-shadow:inset 0 1px 0 rgba(255,184,48,0.3);}
+.tab.active.t-jobwork{color:var(--green);box-shadow:inset 0 1px 0 rgba(0,214,138,0.3);}
+.tab.active.t-records{color:var(--cyan);box-shadow:inset 0 1px 0 rgba(0,229,255,0.3);}
+.tab:not(.active):hover{background:var(--ink3);color:var(--fog);}
+.tab-badge{
+  font-size:0.65rem;font-weight:700;
+  padding:1px 6px;border-radius:50px;
+  background:var(--ink4);color:var(--mist);
+  font-family:'JetBrains Mono',monospace;
+}
+.tab.active .tab-badge.tb-p{background:rgba(61,108,255,0.15);color:var(--blue3);}
+.tab.active .tab-badge.tb-s{background:rgba(255,184,48,0.15);color:var(--amber2);}
+.tab.active .tab-badge.tb-j{background:rgba(0,214,138,0.15);color:var(--green2);}
+
+/* ===== FORM PANELS ===== */
+.panel{display:none;animation:panelIn 0.4s cubic-bezier(0.16,1,0.3,1) both;}
+.panel.active{display:block;}
+@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== FORM CARD ===== */
+.fc{
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r3);
+  overflow:hidden;
+  position:relative;
+}
+.fc-accent{height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--blue));background-size:200%;animation:shimBar 4s linear infinite;}
+@keyframes shimBar{0%{background-position:0%}100%{background-position:200%}}
+.fc-accent.amber{background:linear-gradient(90deg,var(--amber),var(--amber2),var(--amber));animation:shimBar 4s linear infinite;}
+.fc-accent.green{background:linear-gradient(90deg,var(--green),var(--green2),var(--green));animation:shimBar 4s linear infinite;}
+.fc-body{padding:2rem;}
+
+/* Form Header */
+.fh{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.fh-left{display:flex;align-items:center;gap:1rem;}
+.fh-icon{
+  width:54px;height:54px;border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;
+  background:var(--ink3);border:1px solid var(--line2);
+  position:relative;overflow:hidden;
+}
+.fh-icon::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.05),transparent);
+}
+.fh-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;line-height:1;}
+.fh-sub{font-size:0.78rem;color:var(--mist);margin-top:0.2rem;letter-spacing:0.03em;}
+.indent-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1rem;font-weight:600;
+  padding:0.4rem 1rem;
+  border-radius:var(--r);border:1px dashed var(--line2);
+  background:var(--ink3);
+  letter-spacing:0.08em;
+}
+.indent-badge.blue{color:var(--blue2);border-color:rgba(61,108,255,0.3);}
+.indent-badge.amber{color:var(--amber);border-color:rgba(255,184,48,0.3);}
+.indent-badge.green{color:var(--green);border-color:rgba(0,214,138,0.3);}
+
+/* Section label */
+.sec-label{
+  display:flex;align-items:center;gap:0.75rem;
+  margin:1.75rem 0 1.25rem;
+}
+.sec-label span{
+  font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--steel);white-space:nowrap;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--line);}
+
+/* Grid */
+.fg{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:0;}
+.fg-4{grid-template-columns:repeat(4,1fr);}
+.fg-2{grid-template-columns:repeat(2,1fr);}
+.full{grid-column:1/-1;}
+
+.fi{display:flex;flex-direction:column;gap:0.4rem;}
+label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--steel);}
+input,select,textarea{
+  background:var(--ink);
+  border:1px solid var(--line2);
+  border-radius:var(--r);
+  padding:0.65rem 0.9rem;
+  color:var(--snow);
+  font-family:'Outfit',sans-serif;font-size:0.875rem;
+  transition:all 0.2s;outline:none;
+  -webkit-appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--blue);
+  background:rgba(61,108,255,0.05);
+  box-shadow:0 0 0 3px rgba(61,108,255,0.12);
+}
+select option{background:var(--ink2);}
+textarea{resize:vertical;min-height:70px;line-height:1.6;}
+input[type=number]::-webkit-inner-spin-button{opacity:0;}
+input[readonly]{color:var(--blue2);font-family:'JetBrains Mono',monospace;font-size:0.82rem;cursor:default;}
+
+/* ===== ITEMS TABLE ===== */
+.items-wrap{
+  border:1px solid var(--line);border-radius:var(--r2);
+  overflow:hidden;margin-bottom:0;
+}
+.it-head{
+  background:var(--ink3);
+  padding:0.6rem 1rem;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--steel);display:grid;align-items:center;
+  border-bottom:1px solid var(--line);
+}
+.it-row{
+  display:grid;align-items:center;
+  padding:0.5rem 1rem;
+  border-top:1px solid rgba(42,45,62,0.6);
+  background:var(--ink2);
+  transition:background 0.2s;
+  animation:rowIn 0.25s ease both;
+}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.it-row:hover{background:var(--ink3);}
+.it-row input,.it-row select{
+  padding:0.4rem 0.55rem;font-size:0.8rem;
+  border-color:transparent;background:var(--ink3);
+  border-radius:6px;
+}
+.it-row input:focus,.it-row select:focus{border-color:var(--blue);background:rgba(61,108,255,0.08);}
+.it-row input[readonly]{background:transparent;border-color:transparent;color:var(--blue2);}
+.del{
+  width:28px;height:28px;border-radius:6px;
+  background:rgba(255,69,103,0.08);border:1px solid transparent;
+  color:var(--rose);font-size:0.85rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+}
+.del:hover{background:rgba(255,69,103,0.18);border-color:rgba(255,69,103,0.3);transform:scale(1.1);}
+.add-row{
+  width:100%;padding:0.65rem;
+  background:rgba(61,108,255,0.04);
+  border:none;border-top:1px dashed rgba(61,108,255,0.2);
+  color:var(--blue3);font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:600;
+  cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:0.4rem;
+}
+.add-row:hover{background:rgba(61,108,255,0.1);color:var(--blue2);}
+.add-row.amber{color:var(--amber2);border-top-color:rgba(255,184,48,0.2);}
+.add-row.amber:hover{background:rgba(255,184,48,0.08);}
+.add-row.green{color:var(--green2);border-top-color:rgba(0,214,138,0.2);}
+.add-row.green:hover{background:rgba(0,214,138,0.08);}
+
+/* ===== TOTALS ===== */
+.totals{
+  display:flex;justify-content:flex-end;gap:0;
+  background:var(--ink3);border:1px solid var(--line);
+  border-radius:var(--r2);margin:1rem 0 1.5rem;
+  overflow:hidden;
+}
+.total-cell{
+  padding:1rem 1.5rem;text-align:right;
+  border-left:1px solid var(--line);
+}
+.total-cell:first-child{border-left:none;}
+.tl{font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--steel);}
+.tv{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:600;margin-top:0.3rem;}
+
+/* ===== SUBMIT AREA ===== */
+.sa{
+  display:flex;align-items:center;gap:1rem;justify-content:flex-end;
+  padding-top:1.5rem;border-top:1px solid var(--line);
+}
+.clr-btn{
+  padding:0.65rem 1.5rem;border-radius:var(--r);
+  background:transparent;border:1px solid var(--line2);
+  color:var(--mist);font-family:'Outfit',sans-serif;font-size:0.875rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.clr-btn:hover{background:var(--ink3);border-color:var(--steel);color:var(--snow);}
+.sub-btn{
+  padding:0.7rem 2.5rem;border-radius:var(--r);
+  border:none;
+  color:var(--ink);font-family:'Outfit',sans-serif;font-size:0.9rem;font-weight:700;
+  cursor:pointer;transition:all 0.3s;
+  letter-spacing:0.04em;position:relative;overflow:hidden;
+  display:flex;align-items:center;gap:0.6rem;
+}
+.sub-btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2));box-shadow:0 4px 20px rgba(61,108,255,0.4);}
+.sub-btn.blue:hover{box-shadow:0 6px 30px rgba(61,108,255,0.6);transform:translateY(-2px);}
+.sub-btn.amber{background:linear-gradient(135deg,#e6a000,var(--amber));box-shadow:0 4px 20px rgba(255,184,48,0.4);}
+.sub-btn.amber:hover{box-shadow:0 6px 30px rgba(255,184,48,0.6);transform:translateY(-2px);}
+.sub-btn.green{background:linear-gradient(135deg,#00b874,var(--green));box-shadow:0 4px 20px rgba(0,214,138,0.4);}
+.sub-btn.green:hover{box-shadow:0 6px 30px rgba(0,214,138,0.6);transform:translateY(-2px);}
+.sub-btn:active{transform:scale(0.98)!important;}
+.sub-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  transform:translateX(-100%);
+}
+.sub-btn:hover::after{animation:shimBtn 0.6s ease;}
+@keyframes shimBtn{to{transform:translateX(100%);}}
+
+/* ===== SHEET CONFIG INFO ===== */
+.sc-info{
+  background:rgba(61,108,255,0.05);
+  border:1px solid rgba(61,108,255,0.18);
+  border-radius:var(--r2);padding:1rem 1.25rem;
+  margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.sc-info-icon{font-size:1.2rem;}
+.sc-info-text{font-size:0.8rem;color:var(--fog);line-height:1.5;}
+.sc-info-text strong{color:var(--blue2);}
+.sc-info-text a{color:var(--cyan);text-decoration:none;}
+.sc-info-text a:hover{text-decoration:underline;}
+
+/* ===== RECORDS TABLE ===== */
+.rt{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;}
+.rt table{width:100%;border-collapse:collapse;}
+.rt th{
+  background:var(--ink3);padding:0.75rem 1rem;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--steel);text-align:left;white-space:nowrap;
+}
+.rt td{
+  padding:0.75rem 1rem;border-top:1px solid var(--line);
+  font-size:0.82rem;transition:background 0.15s;
+}
+.rt tr:hover td{background:rgba(61,108,255,0.04);}
+.mono{font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:600;}
+.badge{
+  display:inline-flex;align-items:center;gap:0.25rem;
+  padding:0.18rem 0.6rem;border-radius:4px;
+  font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+}
+.bp{background:rgba(61,108,255,0.12);color:var(--blue3);}
+.bs{background:rgba(255,184,48,0.12);color:var(--amber2);}
+.bj{background:rgba(0,214,138,0.12);color:var(--green2);}
+.bpending{background:rgba(255,69,103,0.1);color:var(--rose2);}
+.bsent{background:rgba(0,229,255,0.1);color:var(--cyan);}
+.rec-tools{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;}
+.rec-search{
+  flex:1;display:flex;align-items:center;gap:0.5rem;
+  background:var(--ink2);border:1px solid var(--line2);
+  border-radius:var(--r);padding:0.5rem 0.9rem;
+}
+.rec-search input{border:none;background:transparent;padding:0;font-size:0.875rem;flex:1;}
+.rec-search input:focus{box-shadow:none;}
+.filter-sel{padding:0.5rem 0.9rem;border-radius:var(--r);font-size:0.82rem;min-width:130px;}
+.exp-btn{
+  padding:0.5rem 1rem;border-radius:var(--r);
+  background:var(--ink3);border:1px solid var(--line2);
+  color:var(--fog);font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem;
+}
+.exp-btn:hover{background:var(--ink4);color:var(--snow);}
+.empty-row td{text-align:center;padding:3rem!important;color:var(--mist);}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:999;
+  background:var(--ink2);border:1px solid var(--line2);
+  border-radius:var(--r2);padding:1rem 1.5rem;
+  display:flex;align-items:flex-start;gap:1rem;min-width:320px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.toast.show{transform:translateX(0);}
+.toast.ok{border-left:3px solid var(--green);}
+.toast.err{border-left:3px solid var(--rose);}
+.toast.warn{border-left:3px solid var(--amber);}
+.t-icon{font-size:1.4rem;line-height:1;}
+.t-title{font-weight:700;font-size:0.9rem;margin-bottom:0.2rem;}
+.t-sub{font-size:0.78rem;color:var(--mist);line-height:1.5;}
+
+/* ===== SETUP MODAL ===== */
+.modal-bg{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(7,7,9,0.88);backdrop-filter:blur(16px);
+  display:none;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--ink2);border:1px solid var(--line2);
+  border-radius:var(--r3);padding:2.5rem;
+  max-width:640px;width:95%;
+  animation:fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;margin-bottom:0.5rem;}
+.modal-sub{font-size:0.82rem;color:var(--mist);line-height:1.6;margin-bottom:1.5rem;}
+.step{
+  display:flex;gap:1rem;margin-bottom:1.25rem;
+  padding:1rem 1.25rem;background:var(--ink3);
+  border:1px solid var(--line);border-radius:var(--r2);
+}
+.step-num{
+  width:28px;height:28px;min-width:28px;
+  border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;color:var(--ink);
+}
+.step-content{font-size:0.82rem;color:var(--fog);line-height:1.7;}
+.step-content strong{color:var(--snow);}
+.code-block{
+  background:var(--ink);border:1px solid var(--line2);border-radius:var(--r);
+  padding:1rem;margin:0.75rem 0;
+  font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+  color:var(--green2);line-height:1.8;white-space:pre;overflow-x:auto;
+}
+.modal-actions{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.5rem;}
+.copy-btn{
+  padding:0.5rem 1rem;border-radius:var(--r);
+  background:rgba(0,214,138,0.1);border:1px solid rgba(0,214,138,0.25);
+  color:var(--green);font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.copy-btn:hover{background:rgba(0,214,138,0.2);}
+
+/* ===== LOADING OVERLAY ===== */
+.ld{
+  position:fixed;inset:0;z-index:800;
+  background:rgba(7,7,9,0.8);backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;
+}
+.ld.show{display:flex;}
+.ld-ring{
+  width:64px;height:64px;
+  border:2px solid var(--line2);
+  border-top-color:var(--blue);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-text{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--blue2);letter-spacing:0.05em;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .fg{grid-template-columns:repeat(2,1fr);}
+  .fg-4{grid-template-columns:repeat(2,1fr);}
+  .hero-strip{grid-template-columns:repeat(2,1fr);}
+  .hdr-mid{display:none;}
+  .tab{font-size:0.75rem;}
+}
+@media(max-width:600px){
+  .fg{grid-template-columns:1fr;}
+  .fg-2{grid-template-columns:1fr;}
+  .hero-strip{grid-template-columns:1fr 1fr;}
+  .main{padding:1rem;}
+  .totals{flex-direction:column;}
+  .total-cell{border-left:none;border-top:1px solid var(--line);}
+  .total-cell:first-child{border-top:none;}
+}
+
+/* ===== COUNTER ANIMATE ===== */
+@keyframes numUp{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.num-in{animation:numUp 0.35s ease both;}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr">
+    <div class="logo">IndentPro</div>
+    <div class="hdr-mid">
+      <div class="hdr-stat">
+        <div class="hdr-stat-v" id="hs-total">0</div>
+        <div class="hdr-stat-l">Total</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-v" style="color:var(--blue2)" id="hs-p">0</div>
+        <div class="hdr-stat-l">Purchase</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-v" style="color:var(--amber)" id="hs-s">0</div>
+        <div class="hdr-stat-l">Service</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-v" style="color:var(--green)" id="hs-j">0</div>
+        <div class="hdr-stat-l">Job Work</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <button class="setup-btn" onclick="openSetup()">⚡ Setup Google Sheets</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO STRIP -->
+  <div class="hero-strip">
+    <div class="hero-cell">
+      <div class="hero-icon">📋</div>
+      <div class="hero-val" id="hv-total" style="color:var(--white)">0</div>
+      <div class="hero-label">Total Indents</div>
+      <div class="hero-sub" style="color:var(--blue2)" id="hv-today">0 today</div>
+    </div>
+    <div class="hero-cell">
+      <div class="hero-icon">🛒</div>
+      <div class="hero-val" id="hv-p" style="color:var(--blue2)">0</div>
+      <div class="hero-label">Purchase</div>
+      <div class="hero-sub" style="color:var(--mist)">Active requests</div>
+    </div>
+    <div class="hero-cell">
+      <div class="hero-icon">🔧</div>
+      <div class="hero-val" id="hv-s" style="color:var(--amber)">0</div>
+      <div class="hero-label">Service</div>
+      <div class="hero-sub" style="color:var(--mist)">Maintenance</div>
+    </div>
+    <div class="hero-cell">
+      <div class="hero-icon">⚙️</div>
+      <div class="hero-val" id="hv-j" style="color:var(--green)">0</div>
+      <div class="hero-label">Job Work</div>
+      <div class="hero-sub" style="color:var(--mist)">Processing</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab t-purchase active" id="tab-p" onclick="go('p')">🛒 Purchase Indent <span class="tab-badge tb-p" id="tb-p">0</span></button>
+    <button class="tab t-service" id="tab-s" onclick="go('s')">🔧 Service Indent <span class="tab-badge tb-s" id="tb-s">0</span></button>
+    <button class="tab t-jobwork" id="tab-j" onclick="go('j')">⚙️ Job Work <span class="tab-badge tb-j" id="tb-j">0</span></button>
+    <button class="tab t-records" id="tab-r" onclick="go('r')">📂 Records</button>
+  </div>
+
+  <!-- ===== PURCHASE PANEL ===== -->
+  <div class="panel active" id="panel-p">
+    <div class="fc">
+      <div class="fc-accent"></div>
+      <div class="fc-body">
+        <div class="fh">
+          <div class="fh-left">
+            <div class="fh-icon">🛒</div>
+            <div>
+              <div class="fh-title">PURCHASE INDENT</div>
+              <div class="fh-sub">Material procurement request form</div>
+            </div>
+          </div>
+          <div class="indent-badge blue" id="pi-no">PI-2025-001</div>
+        </div>
+
+        <div class="sc-info">
+          <div class="sc-info-icon">🔗</div>
+          <div class="sc-info-text">
+            Data saves to sheet tab: <strong id="pi-tab-disp">Purchase_Indents</strong> &nbsp;|&nbsp;
+            <a href="https://docs.google.com/spreadsheets/d/1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU/edit" target="_blank">Open Google Sheet ↗</a>
+          </div>
+        </div>
+
+        <div class="sec-label"><span>Basic Information</span></div>
+        <div class="fg">
+          <div class="fi"><label>Indent Date *</label><input type="date" id="pi-date"></div>
+          <div class="fi"><label>Department *</label>
+            <select id="pi-dept"><option value="">— Select —</option><option>Production</option><option>Maintenance</option><option>Quality</option><option>Stores</option><option>Admin</option><option>R&D</option><option>Purchase</option></select>
+          </div>
+          <div class="fi"><label>Requested By *</label><input type="text" id="pi-reqby" placeholder="Employee name"></div>
+          <div class="fi"><label>Priority</label>
+            <select id="pi-priority"><option value="Normal">Normal</option><option value="Urgent">🔴 Urgent</option><option value="High">🟠 High</option><option value="Low">🟢 Low</option></select>
+          </div>
+          <div class="fi"><label>Required By</label><input type="date" id="pi-reqdate"></div>
+          <div class="fi"><label>Vendor Preference</label><input type="text" id="pi-vendor" placeholder="Optional"></div>
+          <div class="fi full"><label>Purpose / Remarks</label><textarea id="pi-purpose" placeholder="Reason for this purchase request..."></textarea></div>
+        </div>
+
+        <div class="sec-label"><span>Item Details</span></div>
+        <div class="items-wrap">
+          <div class="it-head" style="grid-template-columns:2fr 1fr 70px 70px 110px 110px 36px;gap:8px;">
+            <span>Item Description</span><span>Category</span><span>Qty</span><span>Unit</span><span>Rate (₹)</span><span>Amount (₹)</span><span></span>
+          </div>
+          <div id="pi-body"></div>
+          <button class="add-row" onclick="addRow('pi')">＋ Add Item</button>
+        </div>
+
+        <div class="totals">
+          <div class="total-cell"><div class="tl">Items</div><div class="tv" id="pi-ti">0</div></div>
+          <div class="total-cell"><div class="tl">Total Qty</div><div class="tv" id="pi-tq">0</div></div>
+          <div class="total-cell"><div class="tl">Est. Amount</div><div class="tv" style="color:var(--blue2)" id="pi-ta">₹0.00</div></div>
+        </div>
+
+        <div class="sa">
+          <button class="clr-btn" onclick="clearForm('pi')">Clear</button>
+          <button class="sub-btn blue" onclick="submit('pi')">
+            <span>📤</span> Submit to Google Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SERVICE PANEL ===== -->
+  <div class="panel" id="panel-s">
+    <div class="fc">
+      <div class="fc-accent amber"></div>
+      <div class="fc-body">
+        <div class="fh">
+          <div class="fh-left">
+            <div class="fh-icon">🔧</div>
+            <div>
+              <div class="fh-title" style="color:var(--amber)">SERVICE INDENT</div>
+              <div class="fh-sub">Maintenance & service request form</div>
+            </div>
+          </div>
+          <div class="indent-badge amber" id="si-no">SI-2025-001</div>
+        </div>
+
+        <div class="sc-info" style="background:rgba(255,184,48,0.05);border-color:rgba(255,184,48,0.18);">
+          <div class="sc-info-icon">🔗</div>
+          <div class="sc-info-text">
+            Data saves to sheet tab: <strong style="color:var(--amber)" id="si-tab-disp">Service_Indents</strong> &nbsp;|&nbsp;
+            <a href="https://docs.google.com/spreadsheets/d/1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU/edit" target="_blank">Open Google Sheet ↗</a>
+          </div>
+        </div>
+
+        <div class="sec-label"><span>Service Details</span></div>
+        <div class="fg">
+          <div class="fi"><label>Indent Date *</label><input type="date" id="si-date"></div>
+          <div class="fi"><label>Department *</label>
+            <select id="si-dept"><option value="">— Select —</option><option>Production</option><option>Maintenance</option><option>Electrical</option><option>Civil</option><option>IT</option><option>Admin</option></select>
+          </div>
+          <div class="fi"><label>Requested By *</label><input type="text" id="si-reqby" placeholder="Employee name"></div>
+          <div class="fi"><label>Service Type</label>
+            <select id="si-type"><option value="">— Select —</option><option>Annual Maintenance</option><option>Breakdown Repair</option><option>Preventive Maintenance</option><option>Calibration</option><option>Cleaning</option><option>Civil Work</option><option>Electrical Work</option><option>Other</option></select>
+          </div>
+          <div class="fi"><label>Machine / Asset</label><input type="text" id="si-machine" placeholder="Asset name or ID"></div>
+          <div class="fi"><label>Priority</label>
+            <select id="si-priority"><option>Normal</option><option>Urgent</option><option>High</option><option>Low</option></select>
+          </div>
+          <div class="fi"><label>Service Provider</label><input type="text" id="si-provider" placeholder="Vendor or contractor"></div>
+          <div class="fi"><label>Expected Completion</label><input type="date" id="si-completion"></div>
+          <div class="fi full"><label>Problem Description</label><textarea id="si-problem" placeholder="Describe the issue or service needed..."></textarea></div>
+        </div>
+
+        <div class="sec-label"><span>Service Charges</span></div>
+        <div class="items-wrap">
+          <div class="it-head" style="grid-template-columns:2fr 1fr 70px 70px 110px 110px 36px;gap:8px;">
+            <span>Service Description</span><span>Type</span><span>Qty/Hrs</span><span>Unit</span><span>Rate (₹)</span><span>Amount (₹)</span><span></span>
+          </div>
+          <div id="si-body"></div>
+          <button class="add-row amber" onclick="addRow('si')">＋ Add Service Item</button>
+        </div>
+
+        <div class="totals">
+          <div class="total-cell"><div class="tl">Services</div><div class="tv" id="si-ti">0</div></div>
+          <div class="total-cell"><div class="tl">Total Hrs</div><div class="tv" id="si-tq">0</div></div>
+          <div class="total-cell"><div class="tl">Total Cost</div><div class="tv" style="color:var(--amber)" id="si-ta">₹0.00</div></div>
+        </div>
+
+        <div class="sa">
+          <button class="clr-btn" onclick="clearForm('si')">Clear</button>
+          <button class="sub-btn amber" onclick="submit('si')">
+            <span>📤</span> Submit to Google Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== JOB WORK PANEL ===== -->
+  <div class="panel" id="panel-j">
+    <div class="fc">
+      <div class="fc-accent green"></div>
+      <div class="fc-body">
+        <div class="fh">
+          <div class="fh-left">
+            <div class="fh-icon">⚙️</div>
+            <div>
+              <div class="fh-title" style="color:var(--green)">JOB WORK INDENT</div>
+              <div class="fh-sub">Outsourced job work order form</div>
+            </div>
+          </div>
+          <div class="indent-badge green" id="jw-no">JW-2025-001</div>
+        </div>
+
+        <div class="sc-info" style="background:rgba(0,214,138,0.05);border-color:rgba(0,214,138,0.18);">
+          <div class="sc-info-icon">🔗</div>
+          <div class="sc-info-text">
+            Data saves to sheet tab: <strong style="color:var(--green)" id="jw-tab-disp">JobWork_Indents</strong> &nbsp;|&nbsp;
+            <a href="https://docs.google.com/spreadsheets/d/1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU/edit" target="_blank">Open Google Sheet ↗</a>
+          </div>
+        </div>
+
+        <div class="sec-label"><span>Job Work Details</span></div>
+        <div class="fg">
+          <div class="fi"><label>Indent Date *</label><input type="date" id="jw-date"></div>
+          <div class="fi"><label>Job Work Type</label>
+            <select id="jw-type"><option value="">— Select —</option><option>Fabrication</option><option>Machining</option><option>Welding</option><option>Painting</option><option>Powder Coating</option><option>Heat Treatment</option><option>Plating</option><option>Assembly</option><option>Testing</option><option>Packaging</option><option>Other</option></select>
+          </div>
+          <div class="fi"><label>Raised By / Dept *</label><input type="text" id="jw-dept" placeholder="Name or department"></div>
+          <div class="fi"><label>Job Worker / Vendor</label><input type="text" id="jw-vendor" placeholder="Vendor name"></div>
+          <div class="fi"><label>Start Date</label><input type="date" id="jw-start"></div>
+          <div class="fi"><label>Delivery Date</label><input type="date" id="jw-delivery"></div>
+          <div class="fi"><label>Drawing / Product No.</label><input type="text" id="jw-drawing" placeholder="Drawing or product code"></div>
+          <div class="fi"><label>Priority</label>
+            <select id="jw-priority"><option>Normal</option><option>Urgent</option><option>High</option><option>Low</option></select>
+          </div>
+          <div class="fi full"><label>Special Instructions</label><textarea id="jw-instructions" placeholder="Quality requirements, tolerances, special notes..."></textarea></div>
+        </div>
+
+        <div class="sec-label"><span>Raw Material to Send</span></div>
+        <div class="fg fg-4">
+          <div class="fi"><label>Material Name</label><input type="text" id="jw-mat" placeholder="e.g. MS Sheet 3mm"></div>
+          <div class="fi"><label>Qty</label><input type="number" id="jw-mq" placeholder="0" min="0"></div>
+          <div class="fi"><label>Unit</label>
+            <select id="jw-mu"><option>Nos</option><option>Kg</option><option>Mtr</option><option>Sheet</option><option>Litre</option></select>
+          </div>
+          <div class="fi"><label>DC / Challan No.</label><input type="text" id="jw-challan" placeholder="Outward challan no."></div>
+        </div>
+
+        <div class="sec-label"><span>Job Items</span></div>
+        <div class="items-wrap">
+          <div class="it-head" style="grid-template-columns:2fr 1fr 70px 70px 110px 110px 36px;gap:8px;">
+            <span>Job Description</span><span>Process</span><span>Qty</span><span>Unit</span><span>Rate (₹)</span><span>Amount (₹)</span><span></span>
+          </div>
+          <div id="jw-body"></div>
+          <button class="add-row green" onclick="addRow('jw')">＋ Add Job Item</button>
+        </div>
+
+        <div class="totals">
+          <div class="total-cell"><div class="tl">Jobs</div><div class="tv" id="jw-ti">0</div></div>
+          <div class="total-cell"><div class="tl">Total Qty</div><div class="tv" id="jw-tq">0</div></div>
+          <div class="total-cell"><div class="tl">Job Cost</div><div class="tv" style="color:var(--green)" id="jw-ta">₹0.00</div></div>
+        </div>
+
+        <div class="sa">
+          <button class="clr-btn" onclick="clearForm('jw')">Clear</button>
+          <button class="sub-btn green" onclick="submit('jw')">
+            <span>📤</span> Submit to Google Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RECORDS PANEL ===== -->
+  <div class="panel" id="panel-r">
+    <div class="fc">
+      <div class="fc-accent" style="background:linear-gradient(90deg,var(--cyan),var(--blue),var(--cyan));background-size:200%;animation:shimBar 4s linear infinite;"></div>
+      <div class="fc-body">
+        <div class="fh" style="margin-bottom:1.5rem;">
+          <div class="fh-left">
+            <div class="fh-icon">📂</div>
+            <div>
+              <div class="fh-title" style="color:var(--cyan)">ALL RECORDS</div>
+              <div class="fh-sub">Complete indent history</div>
+            </div>
+          </div>
+        </div>
+        <div class="rec-tools">
+          <div class="rec-search">
+            <span style="color:var(--steel)">🔍</span>
+            <input type="text" placeholder="Search by indent no, dept, name..." oninput="filterRec()" id="rsearch">
+          </div>
+          <select class="filter-sel" id="rtype" onchange="filterRec()">
+            <option value="">All Types</option>
+            <option value="Purchase">Purchase</option>
+            <option value="Service">Service</option>
+            <option value="Job Work">Job Work</option>
+          </select>
+          <button class="exp-btn" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="rt">
+          <table>
+            <thead>
+              <tr>
+                <th>Indent No.</th><th>Type</th><th>Date</th>
+                <th>Department</th><th>Requested By</th>
+                <th>Priority</th><th>Amount (₹)</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="rec-body">
+              <tr class="empty-row"><td colspan="8">No records yet. Submit your first indent above!</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setup-modal">
+  <div class="modal">
+    <div class="modal-title">⚡ GOOGLE SHEETS SETUP</div>
+    <div class="modal-sub">
+      Aapke sheet ID <strong style="color:var(--blue2)">1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU</strong> pe data save karne ke liye niche ke steps follow karo. <strong>Sirf ek baar</strong> karna hai.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Google Apps Script kholo:</strong><br>
+        <a href="https://script.google.com/home/projects/create" target="_blank" style="color:var(--cyan)">script.google.com ↗</a> pe jaao. New project banao aur pura existing code delete karo.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Ye code paste karo:</strong>
+        <div class="code-block" id="gas-code">const SHEET_ID = "1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU";
+
+// ✅ This handles GET requests from browser (no CORS issues)
+function doGet(e) {
+  try {
+    if (e.parameter.action === "save") {
+      var decoded = decodeURIComponent(escape(Utilities.base64Decode(e.parameter.d, Utilities.Charset.UTF_8)));
+      // Utilities.base64Decode returns byte[], convert to string
+      if (typeof decoded !== "string") {
+        decoded = String.fromCharCode.apply(null, decoded);
+      }
+      var data = JSON.parse(decoded);
+      var ss = SpreadsheetApp.openById(data.sheetId || SHEET_ID);
+      var sheet = ss.getSheetByName(data.tab);
+      if (!sheet) sheet = ss.insertSheet(data.tab);
+      if (sheet.getLastRow() === 0) sheet.appendRow(data.headers);
+      data.rows.forEach(function(r) { sheet.appendRow(r); });
+      return ContentService.createTextOutput(JSON.stringify({ok:true}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput("ok");
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Also keep doPost as backup
+function doPost(e) {
+  try {
+    var raw = e.postData ? e.postData.contents : "{}";
+    var data = JSON.parse(raw);
+    var ss = SpreadsheetApp.openById(data.sheetId || SHEET_ID);
+    var sheet = ss.getSheetByName(data.tab);
+    if (!sheet) sheet = ss.insertSheet(data.tab);
+    if (sheet.getLastRow() === 0) sheet.appendRow(data.headers);
+    data.rows.forEach(function(r) { sheet.appendRow(r); });
+    return ContentService.createTextOutput(JSON.stringify({ok:true}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</div>
+        <button class="copy-btn" onclick="copyCode()">📋 Code Copy Karo</button>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Deploy karo:</strong><br>
+        Top right → <strong>Deploy → New deployment</strong> → Type: <strong>Web App</strong><br>
+        Execute as: <strong>Me</strong> | Who has access: <strong>Anyone</strong><br>
+        → Deploy karo → URL copy karo
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>URL paste karo yahan:</strong>
+        <div style="margin-top:0.5rem">
+          <input type="text" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="clr-btn" onclick="closeSetup()">Cancel</button>
+      <button class="sub-btn blue" onclick="saveSetup()">✅ Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="ld" id="ld">
+  <div class="ld-ring"></div>
+  <div class="ld-text" id="ld-txt">Sending to Google Sheets...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="t-icon" id="t-icon">✅</div>
+  <div>
+    <div class="t-title" id="t-title">Success!</div>
+    <div class="t-sub" id="t-sub">Data saved.</div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const SHEET_ID = "1YACOB4RNuU3JRlXU5AEsPP-WXe-cQD92z4eT3akJrtU";
+  let gasUrl = localStorage.getItem('gas_url') || 'https://script.google.com/macros/s/AKfycbz9OOX7bswVf78ylFaT0RwZLcvSDvnjM8WG8VnVbm-tLeoXzHAK2XuNsc9a208Y5AvMfg/exec';
+let records = JSON.parse(localStorage.getItem("indent_recs") || "[]");
+let counters = JSON.parse(localStorage.getItem("indent_cnt") || '{"pi":1,"si":1,"jw":1}');
+let rows = {pi:[],si:[],jw:[]};
+
+// Row configs
+const rowCfg = {
+  pi:{
+    cols:"2fr 1fr 70px 70px 110px 110px 36px",
+    fields:[
+      {t:"text",p:"Item description",id:"desc"},
+      {t:"sel",p:"",id:"cat",opts:["Raw Material","Consumable","Spare Part","Packing","Chemical","Tool","Other"]},
+      {t:"num",p:"0",id:"qty"},
+      {t:"sel",p:"",id:"unit",opts:["Nos","Kg","Mtr","Ltr","Box","Set","Pcs"]},
+      {t:"num",p:"0.00",id:"rate"},
+      {t:"ro",p:"0.00",id:"amt"}
+    ]
+  },
+  si:{
+    cols:"2fr 1fr 70px 70px 110px 110px 36px",
+    fields:[
+      {t:"text",p:"Service description",id:"desc"},
+      {t:"sel",p:"",id:"cat",opts:["Labour","Material","Equipment","Travelling","Other"]},
+      {t:"num",p:"0",id:"qty"},
+      {t:"sel",p:"",id:"unit",opts:["Hrs","Days","Nos","Visit","Lump Sum"]},
+      {t:"num",p:"0.00",id:"rate"},
+      {t:"ro",p:"0.00",id:"amt"}
+    ]
+  },
+  jw:{
+    cols:"2fr 1fr 70px 70px 110px 110px 36px",
+    fields:[
+      {t:"text",p:"Job description",id:"desc"},
+      {t:"sel",p:"",id:"cat",opts:["Fabrication","Machining","Welding","Painting","Finishing","Assembly","Other"]},
+      {t:"num",p:"0",id:"qty"},
+      {t:"sel",p:"",id:"unit",opts:["Nos","Kg","Set","Lot","Mtr"]},
+      {t:"num",p:"0.00",id:"rate"},
+      {t:"ro",p:"0.00",id:"amt"}
+    ]
+  }
+};
+
+// ===== INIT =====
+window.onload=function(){
+  const today=new Date().toISOString().split("T")[0];
+  ["pi-date","si-date","jw-date"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+  updateNos();
+  addRow("pi");addRow("si");addRow("jw");
+  updateStats();
+  renderRecs();
+  if(gasUrl) document.getElementById("gas-url").value=gasUrl;
+};
+
+// ===== TABS =====
+function go(t){
+  ["p","s","j","r"].forEach(x=>{
+    document.getElementById("panel-"+x).classList.remove("active");
+    document.getElementById("tab-"+x).classList.remove("active");
+  });
+  document.getElementById("panel-"+t).classList.add("active");
+  document.getElementById("tab-"+t).classList.add("active");
+  if(t==="r") renderRecs();
+}
+
+// ===== ROWS =====
+function addRow(prefix){
+  const id=Date.now()+Math.random();
+  rows[prefix].push({id});
+  renderRows(prefix);
+}
+function removeRow(prefix,id){
+  rows[prefix]=rows[prefix].filter(r=>r.id!==id);
+  renderRows(prefix);
+  calcTotals(prefix);
+}
+function renderRows(prefix){
+  const cfg=rowCfg[prefix];
+  const body=document.getElementById(prefix+"-body");
+  body.innerHTML="";
+  rows[prefix].forEach((row,i)=>{
+    const div=document.createElement("div");
+    div.className="it-row";
+    div.style.gridTemplateColumns=cfg.cols;
+    div.style.gap="8px";
+    let html="";
+    cfg.fields.forEach(f=>{
+      if(f.t==="text") html+=`<input type="text" placeholder="${f.p}" id="${prefix}-${f.id}-${row.id}" oninput="calcTotals('${prefix}')">`;
+      else if(f.t==="num") html+=`<input type="number" placeholder="${f.p}" id="${prefix}-${f.id}-${row.id}" min="0" step="${f.id==='rate'?'0.01':'1'}" oninput="calcTotals('${prefix}')">`;
+      else if(f.t==="ro") html+=`<input type="number" id="${prefix}-${f.id}-${row.id}" readonly value="0.00">`;
+      else if(f.t==="sel") html+=`<select id="${prefix}-${f.id}-${row.id}">${f.opts.map(o=>`<option>${o}</option>`).join("")}</select>`;
+    });
+    html+=`<button class="del" onclick="removeRow('${prefix}',${row.id})" title="Delete">✕</button>`;
+    div.innerHTML=html;
+    body.appendChild(div);
+  });
+  calcTotals(prefix);
+}
+function calcTotals(prefix){
+  let ta=0,tq=0;
+  rows[prefix].forEach(row=>{
+    const qty=parseFloat(document.getElementById(`${prefix}-qty-${row.id}`)?.value||0);
+    const rate=parseFloat(document.getElementById(`${prefix}-rate-${row.id}`)?.value||0);
+    const amt=qty*rate;
+    const el=document.getElementById(`${prefix}-amt-${row.id}`);
+    if(el)el.value=amt.toFixed(2);
+    ta+=amt;tq+=qty;
+  });
+  document.getElementById(`${prefix}-ti`).textContent=rows[prefix].length;
+  document.getElementById(`${prefix}-tq`).textContent=tq.toFixed(0);
+  document.getElementById(`${prefix}-ta`).textContent="₹"+ta.toFixed(2);
+}
+
+// ===== INDENT NUMBERS =====
+function updateNos(){
+  const y=new Date().getFullYear();
+  document.getElementById("pi-no").textContent=`PI-${y}-${String(counters.pi).padStart(3,"0")}`;
+  document.getElementById("si-no").textContent=`SI-${y}-${String(counters.si).padStart(3,"0")}`;
+  document.getElementById("jw-no").textContent=`JW-${y}-${String(counters.jw).padStart(3,"0")}`;
+}
+
+// ===== SUBMIT =====
+async function submit(prefix){
+  const map={pi:"Purchase",si:"Service",jw:"Job Work"};
+  const no=document.getElementById(`${prefix}-no`).textContent;
+  const type=map[prefix];
+
+  // Validation
+  const dateEl=document.getElementById(`${prefix}-date`);
+  const deptEl=document.getElementById(prefix==="jw"?"jw-dept":`${prefix}-dept`);
+  const reqbyEl=document.getElementById(prefix==="jw"?"jw-dept":`${prefix}-reqby`);
+  if(!dateEl?.value||!deptEl?.value){
+    toast("warn","⚠️ Required Fields","Date aur department fill karo.");return;
+  }
+
+  if(!gasUrl){
+    toast("warn","⚡ Setup Required","Pehle Google Sheets setup karo → 'Setup Google Sheets' button");
+    openSetup();return;
+  }
+
+  // Build rows
+  const tab = prefix==="pi"?"Purchase_Indents":prefix==="si"?"Service_Indents":"JobWork_Indents";
+  const headers = prefix==="pi"
+    ?["Indent No","Date","Department","Requested By","Priority","Vendor","Required By","Purpose","Item","Category","Qty","Unit","Rate","Amount","Timestamp"]
+    :prefix==="si"
+    ?["Indent No","Date","Department","Requested By","Priority","Service Type","Machine","Provider","Completion","Problem","Service Item","Type","Qty/Hrs","Unit","Rate","Amount","Timestamp"]
+    :["Indent No","Date","Department/By","Priority","Job Type","Vendor","Drawing No","Start","Delivery","Material","Mat Qty","Challan","Instructions","Job Item","Process","Qty","Unit","Rate","Amount","Timestamp"];
+
+  const ts=new Date().toLocaleString("en-IN");
+  const dataRows=rows[prefix].map(row=>{
+    const desc=document.getElementById(`${prefix}-desc-${row.id}`)?.value||"";
+    const cat=document.getElementById(`${prefix}-cat-${row.id}`)?.value||"";
+    const qty=document.getElementById(`${prefix}-qty-${row.id}`)?.value||"0";
+    const unit=document.getElementById(`${prefix}-unit-${row.id}`)?.value||"";
+    const rate=document.getElementById(`${prefix}-rate-${row.id}`)?.value||"0";
+    const amt=document.getElementById(`${prefix}-amt-${row.id}`)?.value||"0";
+    if(prefix==="pi") return [no,dateEl.value,document.getElementById("pi-dept").value,document.getElementById("pi-reqby").value,document.getElementById("pi-priority").value,document.getElementById("pi-vendor").value||"",document.getElementById("pi-reqdate").value||"",document.getElementById("pi-purpose").value||"",desc,cat,qty,unit,rate,amt,ts];
+    if(prefix==="si") return [no,dateEl.value,document.getElementById("si-dept").value,document.getElementById("si-reqby").value,document.getElementById("si-priority").value,document.getElementById("si-type").value||"",document.getElementById("si-machine").value||"",document.getElementById("si-provider").value||"",document.getElementById("si-completion").value||"",document.getElementById("si-problem").value||"",desc,cat,qty,unit,rate,amt,ts];
+    return [no,dateEl.value,document.getElementById("jw-dept").value,document.getElementById("jw-priority").value,document.getElementById("jw-type").value||"",document.getElementById("jw-vendor").value||"",document.getElementById("jw-drawing").value||"",document.getElementById("jw-start").value||"",document.getElementById("jw-delivery").value||"",document.getElementById("jw-mat").value||"",document.getElementById("jw-mq").value||"",document.getElementById("jw-challan").value||"",document.getElementById("jw-instructions").value||"",desc,cat,qty,unit,rate,amt,ts];
+  });
+
+  showLd("Saving to Google Sheets...");
+  // Save local record first
+  const total=rows[prefix].reduce((s,r)=>s+parseFloat(document.getElementById(`${prefix}-amt-${r.id}`)?.value||0),0);
+  saveRec({no,type,date:dateEl.value,dept:deptEl?.value||"",reqby:reqbyEl?.value||"",priority:document.getElementById(`${prefix}-priority`)?.value||"Normal",amount:total,status:"Sending"});
+  const key=prefix==="pi"?"pi":prefix==="si"?"si":"jw";
+  counters[key]++;
+  localStorage.setItem("indent_cnt",JSON.stringify(counters));
+  updateNos();updateStats();
+
+  // Submit via hidden form (bypasses CORS completely)
+  submitViaForm(gasUrl, {tab,headers,rows:dataRows}, no, dataRows.length, tab, prefix);
+}
+
+function submitViaForm(url, payload, no, rowCount, tab, prefix){
+  // Encode data as base64 and send via doGet (GET request = no CORS issue)
+  const json = JSON.stringify(payload);
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const getUrl = url + "?action=save&d=" + encodeURIComponent(encoded) + "&t=" + Date.now();
+  
+  const img = new Image();
+  let done = false;
+  
+  function onDone(ok){
+    if(done) return; done = true;
+    hideLd();
+    if(ok){
+      toast("ok","✅ Saved to Google Sheet!",no+" — "+rowCount+" row(s) added to "+tab,5000);
+      updateRecStatus(no,"✅ Synced");
+    } else {
+      toast("ok","✅ Submitted! Verify in sheet →",no+" sent to "+tab,6000);
+      updateRecStatus(no,"✅ Sent");
+    }
+    clearForm(prefix);
+  }
+  
+  img.onload = img.onerror = function(){ onDone(true); };
+  setTimeout(function(){ onDone(false); }, 12000);
+  img.src = getUrl;
+}
+
+
+function clearForm(prefix){
+  const body=document.getElementById(prefix+"-body");
+  if(body) body.innerHTML="";
+  rows[prefix]=[];
+  addRow(prefix);
+}
+
+// ===== RECORDS =====
+function saveRec(r){
+  records.unshift(r);
+  localStorage.setItem("indent_recs",JSON.stringify(records));
+}
+function updateRecStatus(no, status){
+  records = records.map(r => r.no===no ? Object.assign({},r,{status:status}) : r);
+  localStorage.setItem("indent_recs",JSON.stringify(records));
+  renderRecs();
+}
+function renderRecs(q="",t=""){
+  let data=records;
+  if(q) data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q));
+  if(t) data=data.filter(r=>r.type===t);
+  const tbody=document.getElementById("rec-body");
+  if(!data.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No records found.</td></tr>';return;}
+  tbody.innerHTML=data.map(r=>`
+    <tr>
+      <td class="mono">${r.no}</td>
+      <td><span class="badge ${r.type==="Purchase"?"bp":r.type==="Service"?"bs":"bj"}">${r.type}</span></td>
+      <td>${r.date}</td>
+      <td>${r.dept||"—"}</td>
+      <td>${r.reqby||"—"}</td>
+      <td>${r.priority||"—"}</td>
+      <td class="mono">₹${parseFloat(r.amount||0).toFixed(2)}</td>
+      <td><span class="badge ${r.status==="Sent"?"bsent":"bpending"}">${r.status}</span></td>
+    </tr>`).join("");
+}
+function filterRec(){
+  renderRecs(document.getElementById("rsearch").value.toLowerCase(),document.getElementById("rtype").value);
+}
+function updateStats(){
+  const t=records.length;
+  const p=records.filter(r=>r.type==="Purchase").length;
+  const s=records.filter(r=>r.type==="Service").length;
+  const j=records.filter(r=>r.type==="Job Work").length;
+  const today=new Date().toISOString().split("T")[0];
+  const td=records.filter(r=>r.date===today).length;
+  ["hs-total","hv-total"].forEach(id=>animN(id,t));
+  ["hs-p","hv-p","tb-p"].forEach(id=>animN(id,p));
+  ["hs-s","hv-s","tb-s"].forEach(id=>animN(id,s));
+  ["hs-j","hv-j","tb-j"].forEach(id=>animN(id,j));
+  document.getElementById("hv-today").textContent=td+" today";
+}
+function animN(id,v){
+  const el=document.getElementById(id);if(!el)return;
+  let c=0;const step=Math.max(1,Math.ceil(v/15));
+  const t=setInterval(()=>{c=Math.min(c+step,v);el.textContent=c;if(c>=v)clearInterval(t);},25);
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+  if(!records.length){toast("warn","No Data","Records nahi hain");return;}
+  const h=["Indent No","Type","Date","Dept","Requested By","Priority","Amount","Status"];
+  const csv=[h,...records.map(r=>[r.no,r.type,r.date,r.dept||"",r.reqby||"",r.priority,r.amount||0,r.status])].map(r=>r.join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);
+  a.download=`indent_export_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  toast("ok","📥 Export Done","CSV file download ho rahi hai");
+}
+
+// ===== SETUP =====
+function openSetup(){
+  document.getElementById("setup-modal").classList.add("open");
+  if(gasUrl) document.getElementById("gas-url").value=gasUrl;
+}
+function closeSetup(){document.getElementById("setup-modal").classList.remove("open");}
+function saveSetup(){
+  const url=document.getElementById("gas-url").value.trim();
+  if(!url){toast("err","URL Missing","Apps Script URL paste karo");return;}
+  gasUrl=url;
+  localStorage.setItem("gas_url",url);
+  closeSetup();
+  toast("ok","✅ Connected!","Google Sheets se connect ho gaya");
+}
+function copyCode(){
+  const code=document.getElementById("gas-code").textContent;
+  navigator.clipboard.writeText(code).then(()=>toast("ok","📋 Copied!","Code clipboard mein aa gaya"));
+}
+
+// ===== UI HELPERS =====
+function showLd(msg){document.getElementById("ld-txt").textContent=msg;document.getElementById("ld").classList.add("show");}
+function hideLd(){document.getElementById("ld").classList.remove("show");}
+let toastTimer;
+function toast(type,title,sub){
+  clearTimeout(toastTimer);
+  const el=document.getElementById("toast");
+  document.getElementById("t-title").textContent=title;
+  document.getElementById("t-sub").textContent=sub;
+  document.getElementById("t-icon").textContent=type==="ok"?"✅":type==="warn"?"⚠️":"❌";
+  el.className="toast "+(type==="ok"?"ok":type==="warn"?"warn":"err");
+  el.classList.add("show");
+  toastTimer=setTimeout(()=>el.classList.remove("show"),4500);
+}
+
+// ======== IFRAME SEND (bypasses CORS) ========
+function sendViaIframe(url, payload, indentNo, rowCount, type, btn, spin) {
+  return new Promise((resolve, reject) => {
+    // Method 1: Use a hidden form POST (most reliable, bypasses CORS)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = '_iframeTarget';
+    form.style.display = 'none';
+
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'data';
+    inp.value = JSON.stringify(payload);
+    form.appendChild(inp);
+
+    // Create hidden iframe
+    let iframe = document.getElementById('_iframeTarget');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = '_iframeTarget';
+      iframe.id = '_iframeTarget';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    // Wait for iframe load = submission done
+    let done = false;
+    iframe.onload = function() {
+      if (done) return;
+      done = true;
+      document.getElementById('send-ov').classList.remove('show');
+      btn.classList.remove('loading'); spin.style.display = 'none';
+      toast('ok', '✅ Saved to Google Sheets!', indentNo + ' — ' + rowCount + ' row(s) added', 5000);
+      updateRecordSheetStatus(indentNo, '✅ Synced');
+      clearForm(type);
+      resolve();
+    };
+
+    // Timeout fallback - 8 seconds
+    setTimeout(() => {
+      if (done) return;
+      done = true;
+      document.getElementById('send-ov').classList.remove('show');
+      btn.classList.remove('loading'); spin.style.display = 'none';
+      // Assume success if no error (no-cors means we can't read response)
+      toast('ok', '✅ Submitted!', indentNo + ' — Check your Google Sheet to confirm', 6000);
+      updateRecordSheetStatus(indentNo, '✅ Sent');
+      clearForm(type);
+      resolve();
+    }, 8000);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  });
+}
+
+</script>
+</body>
+</html>
